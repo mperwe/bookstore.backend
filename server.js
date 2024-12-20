@@ -1,27 +1,16 @@
 const express = require('express');
-const connectDB = require('./config/bd');
-const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-const orderRoutes = require('./routes/orderRoutes');
+const connectDB = require('./config/bd');
 
 dotenv.config();
-
-// Connect to the database
 connectDB();
 
 const app = express();
 
-// Middleware
-app.use(bodyParser.json());
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
+app.use(express.json());
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/books', require('./routes/bookRoutes'));
+app.use('/api/cart', require('./routes/cartRoutes'));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
