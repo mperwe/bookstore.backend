@@ -1,18 +1,19 @@
 const express = require('express');
-const Book = require('../models/Book');
+const upload = require('../config/multer');
+const { createBook, getBooks, updateBook, deleteBook } = require('../controllers/bookController');
 
 const router = express.Router();
 
-// Get all books
-router.get('/', async (req, res) => {
-  const books = await Book.find();
-  res.json(books);
-});
+// Add book with an image
+router.post('/add', upload.single('image'), createBook);
 
-// Add a book
-router.post('/', async (req, res) => {
-  const book = await Book.create(req.body);
-  res.status(201).json(book);
-});
+// Get all books
+router.get('/', getBooks);
+
+// Update a book
+router.put('/:id', updateBook);
+
+// Delete a book
+router.delete('/:id', deleteBook);
 
 module.exports = router;
