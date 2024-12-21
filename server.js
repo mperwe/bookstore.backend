@@ -1,27 +1,31 @@
 const express = require('express');
-const connectDB = require('./config/bd');
-const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
-const cartRoutes = require('./routes/cartRoutes');
-const orderRoutes = require('./routes/orderRoutes');
+const connectDB = require('./config/db');
 
+// Load environment variables
 dotenv.config();
 
-// Connect to the database
+// Connect to MongoDB
 connectDB();
 
+// Initialize Express app
 const app = express();
 
-// Middleware
-app.use(bodyParser.json());
+// Middleware to parse JSON
+app.use(express.json());
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
+app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
+app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
+app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Error handling middleware (optional, for better debugging)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: err.message });
 });
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
