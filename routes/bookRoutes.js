@@ -1,10 +1,23 @@
 const express = require('express');
-const upload = require('../config/multer');
+const multer = require('multer');
+const cloudinary = require('../config/cloudinary');
 const { createBook, getBooks, updateBook, deleteBook } = require('../controllers/bookController');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const router = express.Router();
 
-// Add book with an image
+// Configure Multer to use Cloudinary Storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'bookstore', // Folder name in your Cloudinary account
+    allowed_formats: ['jpg', 'jpeg', 'png'], // Allowed file formats
+  },
+});
+
+const upload = multer({ storage });
+
+// Add a book with an image
 router.post('/add', upload.single('image'), createBook);
 
 // Get all books
