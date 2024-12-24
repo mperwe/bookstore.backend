@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const multer = require('multer'); // For handling file uploads
 const path = require('path');
 const cloudinary = require('./config/cloudinary'); // Cloudinary configuration
+const cors = require('cors'); // Import CORS
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +17,14 @@ const app = express();
 
 // Middleware to parse JSON
 app.use(express.json());
+
+// CORS Middleware
+const corsOptions = {
+  origin: 'http://localhost:4000', // Replace with your frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+};
+app.use(cors(corsOptions)); // Enable CORS with the specified options
 
 // Middleware for serving static files (optional, if needed for images/uploads)
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
@@ -64,5 +73,5 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 4500;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
