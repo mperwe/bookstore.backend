@@ -36,6 +36,7 @@ app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
 app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
 app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
 app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
+app.use('/api/books', require('./routes/searchRoutes')); // Search books
 
 // Middleware for file uploads (if needed in routes)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
@@ -63,5 +64,5 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
