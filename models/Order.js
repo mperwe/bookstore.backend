@@ -12,4 +12,7 @@ const OrderSchema = new mongoose.Schema({
   status: { type: String, default: 'Pending' },
 });
 
-module.exports = mongoose.model('Order', OrderSchema);
+// Check if model already exists before creating it
+const Order = mongoose.models.Order || mongoose.model('Order', OrderSchema);
+
+module.exports = Order;

@@ -1,10 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
+const cors = require('cors');
 const multer = require('multer'); // For handling file uploads
 const path = require('path');
+const connectDB = require('./config/db'); // MongoDB connection
 const cloudinary = require('./config/cloudinary'); // Cloudinary configuration
-const cors = require('cors'); // Import CORS
 
 // Load environment variables
 dotenv.config();
@@ -20,22 +20,22 @@ app.use(express.json());
 
 // CORS Middleware
 const corsOptions = {
-  origin: 'http://localhost:4000', // Replace with your frontend URL
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  origin: 'http://localhost:4000', // Replace with your frontend's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
 };
-app.use(cors(corsOptions)); // Enable CORS with the specified options
+app.use(cors(corsOptions)); // Enable CORS
 
-// Middleware for serving static files (optional, if needed for images/uploads)
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+// Middleware for serving static files (for local uploads)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/'); // Local upload directory
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${Date.now()}-${file.originalname}`); // Unique filename
   },
 });
 const upload = multer({ storage });
@@ -45,9 +45,9 @@ app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
 app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
 app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
 app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
-app.use('/api/books', require('./routes/searchRoutes')); // Search books
+app.use('/api/books/search', require('./routes/searchRoutes')); // Search books route
 
-// Middleware for file uploads (if needed in routes)
+// File upload route (Cloudinary integration)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   try {
     // Upload image to Cloudinary
@@ -66,12 +66,12 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// Error handling middleware (optional, for better debugging)
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message });
 });
 
-// Start server
+// Start the server
 const PORT = process.env.PORT || 4500;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
