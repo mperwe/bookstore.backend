@@ -1,22 +1,35 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+// Importing Mongoose to create a model and interact with the MongoDB database
+const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+// Defining the schema for an order in the database
+const OrderSchema = new mongoose.Schema({
+  user: { 
+    type: mongoose.Schema.Types.ObjectId,  // Reference to the User model
+    ref: 'User',                           // Ensures this field links to a User document
+    required: true,                        // Makes the user field mandatory
+  },
+  items: [
+    {
+      book: { 
+        type: mongoose.Schema.Types.ObjectId,  // Reference to the Book model
+        ref: 'Book',                           // Ensures this field links to a Book document
+        required: true,                        // Makes the book field mandatory
+      },
+      quantity: { 
+        type: Number, 
+        required: true,                        // Makes the quantity field mandatory
+      },
+    },
+  ],
+  total: { 
+    type: Number, 
+    required: true,                           // Makes the total field mandatory
+  },
+  status: { 
+    type: String, 
+    default: 'Pending',                      // Default status is 'Pending' if not provided
+  },
 });
 
-// Hash password before saving to the database
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-
-// Validate password during login
-userSchema.methods.isPasswordValid = async function (password) {
-  return bcrypt.compare(password, this.password);
-};
-
-module.exports = mongoose.model("User", userSchema);
+// Creating and exporting the 'Order' model based on the schema
+module.exports = mongoose.model('Order', OrderSchema);
