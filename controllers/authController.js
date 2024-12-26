@@ -5,25 +5,25 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs'); 
 
 
-const router = express.Router();
 
-router.post('/register', async (req, res) => {
+
+exports.register= async (req, res) => {
 
   const { name, email, password } = req.body;
 
   try {
-  
-    const user = await User.create({ name, email, password });
+    const hashedPassword = await bcrypt.hash(password,10)
+    const user = await User.create({ name, email, password:hashedPassword });
  
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: 'User registered successfully', user });
   } catch (err) {
 
     res.status(400).json({ error: err.message });
   }
-});
+};
 
 // Login route: Handles user login
-router.post('/login', async (req, res) => {
+exports.login = async (req, res) => {
  
   const { email, password } = req.body;
 
@@ -40,15 +40,20 @@ router.post('/login', async (req, res) => {
 
     // If credentials are valid, generate a JWT token with the user's ID
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1h', // Set token expiration time to 1 hour
+      expiresIn: '1h', 
     });
 
-    res.json({ token });
+    const date = new Date()
+    res.status(200).json({message:"Successful User Login",token});
+    console.log(userToken,`Token Generated at:- ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`)
+
+
+
   } catch (err) {
    
     res.status(400).json({ error: err.message });
   }
-});
+};
 
 
-module.exports = router;
+

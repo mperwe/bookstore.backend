@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Define the schema for a book
+
 const bookSchema = new mongoose.Schema(
   {
     title: { 
