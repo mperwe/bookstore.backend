@@ -1,7 +1,7 @@
-// Importing Mongoose to create a model and interact with the MongoDB database
+
 const mongoose = require('mongoose');
 
-// Defining the schema for an order in the database
+
 const OrderSchema = new mongoose.Schema({
   user: { 
     type: mongoose.Schema.Types.ObjectId,  // Reference to the User model

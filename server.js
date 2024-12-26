@@ -33,30 +33,30 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Middleware to handle file uploads (ensure to use it where needed in routes)
-app.use(upload.single('image')); // This will accept a single 'image' field for file uploads
+// Routes
+app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
+app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
+app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
+app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
+app.use('/api/books/search', require('./routes/searchRoutes')); // Search books route
 
-// MongoDB connection setup
-const dbURI = 'mongodb://localhost:27017/booksdb'; // MongoDB connection URI (replace with your actual URI)
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('Connected to MongoDB successfully');
-  })
-  .catch((error) => {
-    console.log('Error connecting to MongoDB:', error.message);
-  });
+// File upload route (Cloudinary integration)
+app.post('/api/upload', upload.single('image'), async (req, res) => {
+  try {
+    // Upload image to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'uploads',
+      use_filename: true,
+    });
 
-// Set up routes for the application
-app.use('/api/search', bookRoutes); // All /api/search routes are handled by searchRoutes.js
-
-// Default route to check if the server is working
-app.get('/', (req, res) => {
-  res.send('Welcome to the Book API');
-});
-
-// Error handling middleware for unhandled routes
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
+    res.status(200).json({
+      message: 'Image uploaded successfully',
+      url: result.secure_url,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
 });
 
 // Centralized error handling middleware for server errors
@@ -65,8 +65,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error' }); // Respond with a generic server error message
 });
 
-// Start the server and listen on port 4500 as per your setup
-const PORT = process.env.PORT || 4500; // Backend runs on port 4500
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// Start the server
+const PORT = process.env.PORT || 4500;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
