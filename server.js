@@ -1,51 +1,44 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const multer = require('multer'); // For handling file uploads
-const path = require('path');
-const connectDB = require('./config/db'); // MongoDB connection
-const cloudinary = require('./config/cloudinary'); // Cloudinary configuration
+// Import necessary modules
+const express = require('express'); // Express framework for routing and middleware
+const mongoose = require('mongoose'); // Mongoose for MongoDB interaction
+const cors = require('cors'); // CORS middleware for handling cross-origin requests
+const bodyParser = require('body-parser'); // Middleware to parse incoming request bodies
+const multer = require('multer'); // Middleware for handling file uploads
 
-// Load environment variables
-dotenv.config();
+// Importing routes
+const bookRoutes = require('./routes/searchRoutes');
 
-// Connect to MongoDB
-connectDB();
-
-// Initialize Express app
+// Initialize the Express application
 const app = express();
 
-// Middleware to parse JSON
-app.use(express.json());
+// CORS setup to allow frontend on port 4000 to communicate with backend on port 4500
+app.use(cors({
+  origin: 'http://localhost:4000', // Allow requests from the frontend on port 4000
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Specify allowed headers (if any)
+}));
 
-// CORS Middleware
-const corsOptions = {
-  origin: 'http://localhost:4000', // Replace with your frontend's URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
-};
-app.use(cors(corsOptions)); // Enable CORS
+// Middleware to parse incoming JSON request bodies
+app.use(bodyParser.json()); // For parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
-// Middleware for serving static files (for local uploads)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Multer configuration for file uploads
+// Setting up file upload handling using multer (if you need to upload book images or other files)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Local upload directory
+    cb(null, './uploads'); // Upload files to the 'uploads' directory
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Unique filename
+    cb(null, Date.now() + '-' + file.originalname); // Naming the uploaded file with a timestamp
   },
 });
 const upload = multer({ storage });
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes')); 
-app.use('/api/books', require('./routes/bookRoutes')); 
-app.use('/api/cart', require('./routes/cartRoutes')); 
-app.use('/api/orders', require('./routes/orderRoutes')); 
-app.use('/api/books/search', require('./routes/searchRoutes')); 
+app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
+app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
+app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
+app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
+app.use('/api/books/search', require('./routes/searchRoutes')); // Search books route
 
 // File upload route (Cloudinary integration)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
@@ -66,16 +59,12 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// Error handling middleware
+// Centralized error handling middleware for server errors
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: err.message });
+  console.error(err.stack); // Log the error for debugging
+  res.status(500).json({ message: 'Internal server error' }); // Respond with a generic server error message
 });
 
 // Start the server
 const PORT = process.env.PORT || 4500;
-app.get('/',(req,res)=>{
-  return res.send("<h1>Welcome to the Book store E-commerce</h1>")
-})
-
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
