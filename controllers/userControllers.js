@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 // Handles the creation of a new user in the database.
 const signUp = async (req, res) => {
   try {
-    // Extracting username, email, and password from the request body.
+   
     const { username, email, password } = req.body;
 
     // Creating a new User instance with the provided data.
@@ -25,7 +25,7 @@ const signUp = async (req, res) => {
   }
 };
 
-// Controller function for user login.
+
 // Handles user authentication and returns a JWT token upon successful login.
 const login = async (req, res) => {
   try {

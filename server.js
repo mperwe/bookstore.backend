@@ -41,11 +41,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
-app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
-app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
-app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
-app.use('/api/books/search', require('./routes/searchRoutes')); // Search books route
+app.use('/api/auth', require('./routes/authRoutes')); 
+app.use('/api/books', require('./routes/bookRoutes')); 
+app.use('/api/cart', require('./routes/cartRoutes')); 
+app.use('/api/orders', require('./routes/orderRoutes')); 
+app.use('/api/books/search', require('./routes/searchRoutes')); 
 
 // File upload route (Cloudinary integration)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
@@ -74,4 +74,8 @@ app.use((err, req, res, next) => {
 
 // Start the server
 const PORT = process.env.PORT || 4500;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.get('/',(req,res)=>{
+  return res.send("<h1>Welcome to the Book store E-commerce</h1>")
+})
+
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

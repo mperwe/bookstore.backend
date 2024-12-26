@@ -1,20 +1,54 @@
-// Importing the Express library to create and manage routes.
+
 const express = require('express');
+const User = require('../models/User'); 
+const jwt = require('jsonwebtoken'); 
+const bcrypt = require('bcryptjs'); 
 
-// Destructuring `register` and `login` functions from the `authController` file.
-// These are the controller functions handling the logic for user registration and login.
-const { register, login } = require('../controllers/authController');
 
-// Creating a new Express Router instance to define routes for authentication.
 const router = express.Router();
 
-// Defining a POST route for user registration.
-// When a POST request is made to `/register`, the `register` controller function is executed.
-router.post('/register', register);
+router.post('/register', async (req, res) => {
 
-// Defining a POST route for user login.
-// When a POST request is made to `/login`, the `login` controller function is executed.
-router.post('/login', login);
+  const { name, email, password } = req.body;
 
-// Exporting the router so it can be used in other parts of the application.
+  try {
+  
+    const user = await User.create({ name, email, password });
+ 
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Login route: Handles user login
+router.post('/login', async (req, res) => {
+ 
+  const { email, password } = req.body;
+
+  try {
+    // Find the user in the database using the provided email
+    const user = await User.findOne({ email });
+
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Compare the provided password with the stored hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // If credentials are valid, generate a JWT token with the user's ID
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h', // Set token expiration time to 1 hour
+    });
+
+    res.json({ token });
+  } catch (err) {
+   
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
 module.exports = router;
