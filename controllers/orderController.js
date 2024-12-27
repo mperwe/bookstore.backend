@@ -1,24 +1,66 @@
-// Importing the Express library to create and manage routes.
-const express = require('express');
+const Order = require('../models/Order');
+const CartItem = require('../models/CartItem');
 
-// Importing controller functions from the orderController file.
-// These functions handle the logic for placing an order and retrieving orders.
-const { placeOrder, getOrders } = require('../controllers/orderController');
 
-// Importing the authentication middleware to protect routes, ensuring only authorized users can access them.
-const authMiddleware = require('../middleware/authMiddleware');
+exports.createOrder = async (req, res) => {
+  const { userId, cartItems } = req.body;
 
-// Creating a new Express Router instance to define order-related routes.
-const router = express.Router();
+  try {
+    // Retrieve cart items from the database
+    const items = await CartItem.find({ _id: { $in: cartItems } }).populate('book');
 
-// POST route to place a new order.
-// This route is protected by `authMiddleware`, ensuring the user is authenticated.
-// Executes the `placeOrder` controller function to handle the order placement logic.
-router.post('/place', authMiddleware, placeOrder);
+    // Calculate the total price
+    const total = items.reduce((sum, item) => sum + item.book.price * item.quantity, 0);
 
-// GET route to retrieve all orders for the authenticated user.
-// This route is also protected by `authMiddleware` and handled by the `getOrders` controller function.
-router.get('/', authMiddleware, getOrders);
+    // Create the order
+    const order = new Order({
+      user: userId,
+      items,
+      total,
+      status: 'pending',
+    });
 
-// Exporting the router to make these routes accessible in other parts of the application.
-module.exports = router;
+    // Save the order to the database
+    await order.save();
+
+    // Respond with the order details
+    res.status(201).json({ message: 'Order placed', order });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({ message: 'Error placing order', error: error.message });
+  }
+};
+
+// retrieve a user's orders
+exports.getUserOrders = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Find orders for the given user
+    const orders = await Order.find({ user: userId }).populate('items.book');
+
+    res.status(200).json({ message: 'User orders retrieved', orders });
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving orders', error: error.message });
+  }
+};
+
+// update an order's status
+exports.updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Update the order status
+    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json({ message: 'Order status updated', order });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order status', error: error.message });
+  }
+};
+
