@@ -36,7 +36,7 @@ exports.getUserOrders = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    // Find orders for the given user
+    
     const orders = await Order.find({ user: userId }).populate('items.book');
 
     res.status(200).json({ message: 'User orders retrieved', orders });
