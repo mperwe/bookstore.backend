@@ -1,17 +1,20 @@
-
-const express = require('express');
 const User = require('../models/User'); 
 const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcryptjs'); 
 
 
 
-exports.getUsers =async(req,res)=>{
-const users= await User.find();
-return res.status(200).json({"Users":users,results:users.length})
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    return res.status(200).json({ "Users": users, results: users.length });
+  } catch (err) {
+    console.error('Error fetching users:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch users' });
+  }
+};
 
 
-}
 exports.register= async (req, res) => {
 
   const { name, email, password } = req.body;

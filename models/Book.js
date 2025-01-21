@@ -6,7 +6,7 @@ const bookSchema = new mongoose.Schema(
     title: { 
       type: String, 
       required: true, 
-      trim: true, // Remove leading/trailing spaces
+      trim: true,
     },
     author: { 
       type: String, 
@@ -15,13 +15,13 @@ const bookSchema = new mongoose.Schema(
     },
     description: { 
       type: String, 
-      trim: true, // Ensure no leading/trailing spaces
-      default: 'No description available', // Provide a default description
+      trim: true, 
+      default: 'No description available', 
     },
     price: { 
       type: Number, 
       required: true,
-      min: 0, // Ensure non-negative price
+      min: 0, 
     },
     image: { 
       type: String, 
@@ -32,7 +32,7 @@ const bookSchema = new mongoose.Schema(
         },
         message: 'Invalid URL format for image',
       },
-      default: 'default-image-url.jpg', // Provide a default image URL
+      default: 'default-image-url.jpg', 
     },
   },
   {
@@ -41,7 +41,7 @@ const bookSchema = new mongoose.Schema(
 );
 
 // Indexing for faster search queries on title and author
-bookSchema.index({ title: 'text', author: 'text' });
+bookSchema.index({title: 'text', author: 'text' });
 
 // Check if model already exists before defining
 const Book = mongoose.models.Book || mongoose.model('Book', bookSchema);

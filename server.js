@@ -40,7 +40,9 @@ app.use('/api/carts', cartRoute);
 app.use('/api/orders', orderRoute); 
 app.use('/api/books/search',searchRoute); 
 
-
+app.get('/', (req, res) => {
+  res.send('<h1>Welcome to book store server</h1>');
+});
 
 // File upload route (Cloudinary integration)
 app.post('/api/upload', upload.single('image'), async (req, res) => {
