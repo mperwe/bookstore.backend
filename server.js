@@ -34,11 +34,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // middleware for endpoints
-app.use('/api/auth',authRoute); 
-app.use('/api/books', bookRoute); 
-app.use('/api/carts', cartRoute); 
-app.use('/api/orders', orderRoute); 
-app.use('/api/books/search',searchRoute); 
+app.use('/api/v1/auth',authRoute); 
+app.use('/api/v1/books', bookRoute); 
+app.use('/api/v1/carts', cartRoute); 
+app.use('/api/v1/orders', orderRoute); 
+app.use('/api/v1/books/search',searchRoute); 
 
 app.get('/', (req, res) => {
   res.send('<h1>Welcome to book store server</h1>');

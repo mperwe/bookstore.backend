@@ -10,24 +10,28 @@ exports.getBooks = async (req, res) => {
 };
 
 
-// exports.createBook = async (req, res) => {
-//   try {
-//     const { title, author, description } = req.body;
+exports.createBook = async (req, res) => {
+  try {
+    const { title, author, description,price,image} = req.body;
 
-//     const book = new Book({
-//       title,
-//       author,
-//       description,
-//       image: req.file ? req.file.path : null, // Save the uploaded image path if an image is provided.
-//     });
+    const book = new Book({
+      title,
+      author,
+      description,
+      price,
+      image: req.file 
+      ? req.file.path // Local file path from upload
+      : image, // URL from the request body.
+    });
 
-//     // Saving the book to the database.
-//     await book.save();
-//     res.status(201).json({ message: 'Book created successfully', book });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
+
+    await book.save();
+
+    return res.status(201).json({ message: 'Book created successfully', book });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
 
 // Function to get all books.
 

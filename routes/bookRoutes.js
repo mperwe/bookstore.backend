@@ -7,10 +7,8 @@ const router = express.Router();
 
 
 router
-
-// .post('/', upload.single('image'), bookController.createBook)
 .get('/', bookController.getBooks)
-
+.post('/create-book', upload.single('image'), bookController.createBook)
 
 // .get('/:id', getBookById)
 
