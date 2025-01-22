@@ -1,39 +1,41 @@
-const multer = require('multer');
-const path = require('path');
+// const multer = require('multer');
+//  const path = require('path');
+// const {CloudinaryStorage} =require('multer-storage-cloudinary')
+// const cloudinary =require('../config/cloudinary')
 
 
-const storage = multer.diskStorage({
+
+// const storage = new CloudinaryStorage({
+
+//   cloudinary,
+//   params:{
+//     folder:'books',
+//     allowed_formats:['jpg', 'png', 'jpeg','gif'],
+//     public_id:(req,file)=>`${Date.now()}-${file.originalname}`
+//   }
  
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); 
-  },
+// });
 
-  
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-// Defining a file filter to restrict uploaded files to specific image formats.
-const fileFilter = (req, file, cb) => {
+// // Defining a file filter to restrict uploaded files to specific image formats.
+// const fileFilter = (req, file, cb) => {
  
-  const fileTypes = /jpeg|jpg|png|gif/;
+//   const fileTypes = /jpeg|jpg|png|gif/;
 
-  // Checking the file extension and MIME type against the allowed types.
-  const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = fileTypes.test(file.mimetype);
-  if (extname && mimetype) {
-    cb(null, true);
-  } else {
+//   // Checking the file extension and MIME type against the allowed types.
+//   const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+//   const mimetype = fileTypes.test(file.mimetype);
+//   if (extname && mimetype) {
+//     cb(null, true);
+//   } else {
    
-    cb('Error: Images only!');
-  }
-};
+//     cb('Error: Images only!');
+//   }
+// };
 
-// Creating an instance of Multer with the configured storage and file filter.
-const upload = multer({
-  storage,
-  fileFilter,
-});
 
-module.exports = { upload };
+// const upload = multer({
+//   storage: storage,
+//   fileFilter,
+// });
+
+// module.exports = upload ;

@@ -1,6 +1,6 @@
 const express = require('express'); 
 const bookController = require('../controllers/bookController'); 
-const { upload } = require('../middlewares/multer'); 
+const upload = require('../config/cloudinary'); 
 
 
 const router = express.Router();

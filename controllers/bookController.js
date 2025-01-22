@@ -1,4 +1,6 @@
 const Book = require('../models/Book');
+const cloudinary = require('cloudinary').v2; 
+
 
 exports.getBooks = async (req, res) => {
   try {
@@ -10,21 +12,30 @@ exports.getBooks = async (req, res) => {
 };
 
 
+
 exports.createBook = async (req, res) => {
   try {
-    const { title, author, description,price,image} = req.body;
+    const { title, author, description, price } = req.body;
 
+    let imageUrl = req.body.image; 
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'books',  
+        use_filename: true,  
+      });
+      imageUrl = result.secure_url;  // Save the URL of the uploaded image
+    }
+
+    
     const book = new Book({
       title,
       author,
       description,
       price,
-      image: req.file 
-      ? req.file.path // Local file path from upload
-      : image, // URL from the request body.
+      image: imageUrl,  // Save the image URL (from Cloudinary or passed in request)
     });
 
-
+    // Save the book to the database
     await book.save();
 
     return res.status(201).json({ message: 'Book created successfully', book });
@@ -32,6 +43,8 @@ exports.createBook = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // Function to get all books.
 

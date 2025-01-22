@@ -2,9 +2,16 @@
 const express = require('express'); 
 const connectDB = require('./config/db')
 const cors = require('cors'); 
-const bodyParser = require('body-parser'); 
 const multer = require('multer');
+const bodyParser = require('body-parser'); 
 require('dotenv').config();
+const upload = require('./config/cloudinary'); 
+// const cloudinary = require('./config/cloudinary');
+
+
+
+
+ 
 
 
 const authRoute =require('./routes/authRoutes')
@@ -13,8 +20,11 @@ const cartRoute =require('./routes/cartRoutes')
 const orderRoute =require('./routes/orderRoutes')
 const searchRoute= require('./routes/searchRoutes')
 
+
 const app = express();
 const PORT = process.env.PORT || 4500;
+
+
 
 // Middleware
 app.use(bodyParser.json()); 
@@ -22,16 +32,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors());
 
 
-//Multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads'); // Upload files to the 'uploads' directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Naming the uploaded file with a timestamp
-  },
-});
-const upload = multer({ storage });
 
 // middleware for endpoints
 app.use('/api/v1/auth',authRoute); 
@@ -44,26 +44,28 @@ app.get('/', (req, res) => {
   res.send('<h1>Welcome to book store server</h1>');
 });
 
-// File upload route (Cloudinary integration)
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+//File upload route (Cloudinary integration)
+app.post('/upload',upload.single('image'), async (req, res) => {
   try {
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'uploads',
-      use_filename: true,
-    });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-    res.status(200).json({
+    // // Upload image to Cloudinary in 'books' folder
+    // const result = await cloudinary.uploader.upload(req.file.path, {
+    //   folder: 'books',  // Set the folder to 'books'
+    //   use_filename: true,
+    // });
+
+ res.status(200).json({
       message: 'Image uploaded successfully',
-      url: result.secure_url,
+      url: req.file.path,  // Image URL from Cloudinary
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to upload image' });
   }
-});//
-
-
+});
 
 connectDB()
 
