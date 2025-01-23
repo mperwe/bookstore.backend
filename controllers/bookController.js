@@ -17,7 +17,13 @@ exports.createBook = async (req, res) => {
   try {
     const { title, author, description, price } = req.body;
 
+    const existingBook = await Book.findOne({ title, author });
+    if (existingBook) {
+      return res.status(400).json({ error: 'Book with the same title and author already exists' });
+    }
+
     let imageUrl = req.body.image; 
+    
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'books',  
