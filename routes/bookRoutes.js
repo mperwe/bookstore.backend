@@ -11,8 +11,7 @@ router
 .get('/:id', bookController.getBookById)
 .post('/create-book', upload.single('image'), bookController.createBook)
 .put('/:id', upload.single('image'), bookController.updateBook)
-
-// .delete('/:id', deleteBook)
+.delete('/:id', bookController.deleteBook)
 
 
 module.exports = router;

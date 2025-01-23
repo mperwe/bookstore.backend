@@ -95,15 +95,20 @@ exports.updateBook = async (req, res) => {
 };
 
 
-// const deleteBook = async (req, res) => {
-//   try {
-//     const book = await Book.findByIdAndDelete(req.params.id); // Deleting the book by its ID.
-//     if (!book) return res.status(404).json({ message: 'Book not found' });
-//     res.status(200).json({ message: 'Book deleted successfully' });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
+exports.deleteBook = async (req, res) => {
+  try {
+    const book = await Book.findByIdAndDelete(
+      req.params.id); 
+
+    if (!book) return res.status(404).json({ message: 'Book not found' })
+
+    res.status(200).json({ message: 'Book deleted successfully', book })
+
+  } catch (error) {
+
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // // Function to search for books by query.
 // const searchBooks = async (req, res) => {
