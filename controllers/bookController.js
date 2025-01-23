@@ -11,11 +11,24 @@ exports.getBooks = async (req, res) => {
   }
 };
 
+exports.getBookById = async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id); 
+    if (!book) return res.status(404).json({ message: 'Book not found' });
+    res.status(200).json({'Book':book});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 exports.createBook = async (req, res) => {
   try {
     const { title, author, description, price } = req.body;
+
+    if (!title || !author || !description || !price || !image) {
+      return res.status(400).json({ error: 'All fields (title, author, description, price,image) are required' });
+    }
 
     const existingBook = await Book.findOne({ title, author });
     if (existingBook) {
@@ -23,7 +36,7 @@ exports.createBook = async (req, res) => {
     }
 
     let imageUrl = req.body.image; 
-    
+
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'books',  
@@ -52,42 +65,36 @@ exports.createBook = async (req, res) => {
 
 
 
-// Function to get all books.
 
 
-// // Function to get a single book by its ID.
-// const getBookById = async (req, res) => {
-//   try {
-//     const book = await Book.findById(req.params.id); // Fetching a book by its ID.
-//     if (!book) return res.status(404).json({ message: 'Book not found' });
-//     res.status(200).json(book);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
+exports.updateBook = async (req, res) => {
+  try {
+    const { title, author, description,price,image } = req.body;
+    let imageUrl = req.body.image; 
 
-// // Function to update a book.
-// const updateBook = async (req, res) => {
-//   try {
-//     const { title, author, description } = req.body;
+    // Preparing updated data, including the image if provided in the request.
+    const updatedData = {
+      title,
+      author,
+      description,
+      price,
+      image: imageUrl//req.file ? req.file.path : undefined,
+    };
 
-//     // Preparing updated data, including the image if provided in the request.
-//     const updatedData = {
-//       title,
-//       author,
-//       description,
-//       image: req.file ? req.file.path : undefined,
-//     };
+    const book = await Book.findByIdAndUpdate(
+      req.params.id, updatedData, 
+      { new: true }
+    );
+    if (!book) return res.status(404).json({ message: 'Book not found' });
 
-//     const book = await Book.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-//     if (!book) return res.status(404).json({ message: 'Book not found' });
-//     res.status(200).json({ message: 'Book updated successfully', book });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
+    res.status(200).json({ message:'Book updated successfully', book });
 
-// // Function to delete a book by its ID.
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 // const deleteBook = async (req, res) => {
 //   try {
 //     const book = await Book.findByIdAndDelete(req.params.id); // Deleting the book by its ID.
@@ -113,12 +120,4 @@ exports.createBook = async (req, res) => {
 //   } catch (error) {
 //     res.status(500).json({ error: 'Server error' });
 //   }
-// };
-
-// // Exporting all the functions to make them available for use in other parts of the application.
-// module.exports = {
-//   getBookById,
-//   updateBook,
-//   deleteBook,
-//   searchBooks, // Exporting the searchBooks function for routing.
 // };

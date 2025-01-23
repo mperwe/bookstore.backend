@@ -8,11 +8,9 @@ const router = express.Router();
 
 router
 .get('/', bookController.getBooks)
+.get('/:id', bookController.getBookById)
 .post('/create-book', upload.single('image'), bookController.createBook)
-
-// .get('/:id', getBookById)
-
-// .put('/:id', upload.single('image'), updateBook)
+.put('/:id', upload.single('image'), bookController.updateBook)
 
 // .delete('/:id', deleteBook)
 
