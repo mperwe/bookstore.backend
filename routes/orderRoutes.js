@@ -1,18 +1,20 @@
 const express = require('express');
-const authMiddleware = require('../middlewares/authMiddleware');
+const {authMiddleware} = require('../middlewares/authMiddleware');
 const orderController = require('../controllers/orderController');
 
 
 const router = express.Router();
 
-// create an order
+
 router
-.post('/create',authMiddleware, orderController.createOrder)
+.get('/user/:userId',authMiddleware,orderController.getUserOrders)
 
-// get all orders for a user
-.get('/user/:userId',authMiddleware, orderController.getUserOrders)
+// .post('/create',authMiddleware, orderController.createOrder)
 
-//  update an order's status
-.patch('/:orderId/status', authMiddleware, orderController.updateOrderStatus)
+// // get all orders for a user
 
-module.exports = router;
+
+// //  update an order's status
+// .patch('/:orderId/status', authMiddleware, orderController.updateOrderStatus)
+
+ module.exports = router;
