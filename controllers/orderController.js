@@ -19,34 +19,34 @@ exports.getUserOrders = async (req, res) => {
 
 
 
-// exports.createOrder = async (req, res) => {
-//   const { userId, cartItems } = req.body;
+exports.createOrder = async (req, res) => {
+  const { userId, cartItems } = req.body;
 
-//   try {
-//     // Retrieve cart items from the database
-//     const items = await CartItem.find({ _id: { $in: cartItems } }).populate('book');
+  try {
+    // Retrieve cart items from the database
+    const items = await CartItem.find({ _id: { $in: cartItems } }).populate('book');
 
-//     // Calculate the total price
-//     const total = items.reduce((sum, item) => sum + item.book.price * item.quantity, 0);
+    // Calculate the total price
+    const total = items.reduce((sum, item) => sum + item.book.price * item.quantity, 0);
 
-//     // Create the order
-//     const order = new Order({
-//       user: userId,
-//       items,
-//       total,
-//       status: 'pending',
-//     });
+    // Create the order
+    const order = new Order({
+      user: userId,
+      items,
+      total,
+      status: 'pending',
+    });
 
-//     // Save the order to the database
-//     await order.save();
+    // Save the order to the database
+    await order.save();
 
-//     // Respond with the order details
-//     res.status(201).json({ message: 'Order placed', order });
-//   } catch (error) {
-//     // Handle errors
-//     res.status(500).json({ message: 'Error placing order', error: error.message });
-//   }
-// };
+    // Respond with the order details
+    res.status(201).json({ message: 'Order placed', order });
+  } catch (error) {
+    // Handle errors
+    res.status(500).json({ message: 'Error placing order', error: error.message });
+  }
+};
 
 
 // // update an order's status

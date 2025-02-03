@@ -9,7 +9,7 @@ const router = express.Router();
 router
 .get('/user/:userId',authMiddleware,orderController.getUserOrders)
 
-// .post('/create',authMiddleware, orderController.createOrder)
+.post('/create',authMiddleware, orderController.createOrder)
 
 // // get all orders for a user
 
