@@ -7,14 +7,15 @@ const router = express.Router();
 
 
 router
+.get('/',orderController.getAllOrders)
+
 .get('/user/:userId',authMiddleware,orderController.getUserOrders)
 
-.post('/create',authMiddleware, orderController.createOrder)
+.post('/create', orderController.createOrderFromCart)
 
-// // get all orders for a user
+.patch('/:orderId/status',orderController.updateOrderStatus)
 
+.delete('/:orderId', orderController.deleteOrderById);
 
-// //  update an order's status
-// .patch('/:orderId/status', authMiddleware, orderController.updateOrderStatus)
 
  module.exports = router;

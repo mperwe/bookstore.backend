@@ -5,25 +5,20 @@ const OrderSchema = new mongoose.Schema({
   items: [
     {
       book: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', required: true },
-      quantity: { type: Number, required: true },
+      quantity: { type: Number, required: true, min: 1 }, // Quantity must be at least 1
     },
   ],
-  total: { type: Number, required: true },
-  status: { 
-    type: String, 
-    enum: ['Cart', 'Order'], // 'Cart' indicates it's still a cart, 'Order' means it's finalized.
-    default: 'Cart',
+  total: { type: Number, required: true, min: 0 }, 
+  status: {
+    type: String,
+    default: 'Pending',
+    enum: ['Pending', 'Completed'], 
   },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+},
+{ timestamps: true } // Adds createdAt and updatedAt fields
+);
 
-// Middleware to update `updatedAt` automatically
-OrderSchema.pre('save', function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-const Order = mongoose.model('Order', OrderSchema);
+// Check if model already exists before creating it
+const Order = mongoose.models.Order || mongoose.model('Order', OrderSchema);
 
 module.exports = Order;

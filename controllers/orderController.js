@@ -1,5 +1,16 @@
 const Order = require('../models/Order');
-const CartItem = require('../models/CartItem');
+const Cart = require('../models/CartItem');
+
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find().populate('user').populate('items.book');
+    res.status(200).json({'Orders made': orders });
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving orders', error: error.message });
+  }
+};
+
 
 
 // retrieve a user's orders
@@ -18,53 +29,75 @@ exports.getUserOrders = async (req, res) => {
 
 
 
-
-exports.createOrder = async (req, res) => {
-  const { userId, cartItems } = req.body;
+exports.createOrderFromCart = async (req, res) => {
+  const { userId } = req.body;
 
   try {
-    // Retrieve cart items from the database
-    const items = await CartItem.find({ _id: { $in: cartItems } }).populate('book');
+    // Step 1: Fetch the user's cart
+    const cart = await Cart.findOne({ user: userId }).populate('items.book');
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({ message: 'Cart is empty' });
+    }
 
-    // Calculate the total price
-    const total = items.reduce((sum, item) => sum + item.book.price * item.quantity, 0);
+    // Step 2: Calculate the total price of the cart
+    const total = cart.items.reduce((sum, item) => sum + item.book.price * item.quantity, 0);
 
-    // Create the order
-    const order = new Order({
+    // Step 3: Create a new order
+    const newOrder = new Order({
       user: userId,
-      items,
+      items: cart.items.map(item => ({
+        book: item.book._id,
+        quantity: item.quantity,
+      })),
       total,
-      status: 'pending',
     });
 
-    // Save the order to the database
-    await order.save();
+    // Step 4: Save the order
+    const savedOrder = await newOrder.save();
 
-    // Respond with the order details
-    res.status(201).json({ message: 'Order placed', order });
+    // Step 5: Clear the cart
+    await Cart.findOneAndUpdate(
+      { user: userId },
+      { $set: { items: [] } }
+    );
+
+    res.status(201).json({ message: 'Order created successfully', order: savedOrder });
   } catch (error) {
-    // Handle errors
-    res.status(500).json({ message: 'Error placing order', error: error.message });
+    res.status(500).json({ message: 'Error creating order', error: error.message });
   }
 };
 
 
 // // update an order's status
-// exports.updateOrderStatus = async (req, res) => {
-//   const { orderId } = req.params;
-//   const { status } = req.body;
+exports.updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
 
-//   try {
-//     // Update the order status
-//     const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+  try {
+    
+    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
 
-//     if (!order) {
-//       return res.status(404).json({ message: 'Order not found' });
-//     }
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
 
-//     res.status(200).json({ message: 'Order status updated', order });
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error updating order status', error: error.message });
-//   }
-// };
+    res.status(200).json({ message: 'Order status updated', order });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order status', error: error.message });
+  }
+};
 
+exports.deleteOrderById = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const deletedOrder = await Order.findByIdAndDelete(orderId);
+    if (!deletedOrder) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.status(200).json({ message: 'Order deleted successfully', deletedOrder });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting order', error: error.message });
+  }
+};

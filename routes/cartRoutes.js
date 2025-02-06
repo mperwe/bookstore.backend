@@ -5,10 +5,10 @@ const {authMiddleware} =require('../middlewares/authMiddleware')
 
 router
 .get('/:userId',authMiddleware, cartController.getCart)
-.post('/add', cartController.addToCart)
-.patch('/:userId/update/:bookId', cartController.updateCartItemQuantity)
-.delete('/:userId/remove/:bookId', cartController.removeFromCart)
-.delete('/:userId/clear', cartController.clearCart);
+.post('/add', authMiddleware,cartController.addToCart)
+.patch('/:userId/update/:bookId',authMiddleware,cartController.updateCartItemQuantity)
+.delete('/:userId/remove/:bookId',authMiddleware,cartController.removeFromCart)
+.delete('/:userId/clear',authMiddleware,cartController.clearCart);
 
 
 module.exports = router;
