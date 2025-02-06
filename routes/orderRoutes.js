@@ -11,7 +11,7 @@ router
 
 .get('/user/:userId',authMiddleware,orderController.getUserOrders)
 
-.post('/create', orderController.createOrderFromCart)
+.post('/create', authMiddleware,orderController.createOrderFromCart)
 
 .patch('/:orderId/status',orderController.updateOrderStatus)
 

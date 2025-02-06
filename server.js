@@ -1,5 +1,8 @@
 
 const express = require('express'); 
+const fs = require("fs");
+const morgan = require("morgan");
+const path = require("path")
 const connectDB = require('./config/db')
 const cors = require('cors'); 
 const multer = require('multer');
@@ -30,6 +33,19 @@ const PORT = process.env.PORT || 4500;
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors());
+
+
+
+// create a write stream (in append mode)
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "logs", "request_logs.txt"),
+  { flags: "a" }
+);
+
+// setup the logger
+app.use(morgan("combined", { stream: accessLogStream }));
+
+
 
 
 
