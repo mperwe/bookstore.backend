@@ -1,57 +1,81 @@
-// Import necessary modules
-const express = require('express'); // Express framework for routing and middleware
-const mongoose = require('mongoose'); // Mongoose for MongoDB interaction
-const cors = require('cors'); // CORS middleware for handling cross-origin requests
-const bodyParser = require('body-parser'); // Middleware to parse incoming request bodies
-const multer = require('multer'); // Middleware for handling file uploads
 
-// Importing routes
-const bookRoutes = require('./routes/searchRoutes');
+const express = require('express'); 
+const fs = require("fs");
+const morgan = require("morgan");
+const path = require("path")
+const connectDB = require('./config/db')
+const cors = require('cors'); 
+const multer = require('multer');
+const bodyParser = require('body-parser'); 
+require('dotenv').config();
+const upload = require('./config/cloudinary'); 
+// const cloudinary = require('./config/cloudinary');
 
-// Initialize the Express application
+
+
+
+ 
+
+
+const authRoute =require('./routes/authRoutes')
+const bookRoute = require('./routes/bookRoutes');
+const cartRoute =require('./routes/cartRoutes')
+const orderRoute =require('./routes/orderRoutes')
+const searchRoute= require('./routes/searchRoutes')
+
+
 const app = express();
+const PORT = process.env.PORT || 4500;
 
-// CORS setup to allow frontend on port 4000 to communicate with backend on port 4500
-app.use(cors({
-  origin: 'http://localhost:4000', // Allow requests from the frontend on port 4000
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Specify allowed headers (if any)
-}));
 
-// Middleware to parse incoming JSON request bodies
-app.use(bodyParser.json()); // For parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
-// Setting up file upload handling using multer (if you need to upload book images or other files)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads'); // Upload files to the 'uploads' directory
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname); // Naming the uploaded file with a timestamp
-  },
+// Middleware
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(cors());
+
+
+
+// create a write stream (in append mode)
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "logs", "request_logs.txt"),
+  { flags: "a" }
+);
+
+// setup the logger
+app.use(morgan("combined", { stream: accessLogStream }));
+
+
+
+
+
+// middleware for endpoints
+app.use('/api/v1/auth',authRoute); 
+app.use('/api/v1/books', bookRoute); 
+app.use('/api/v1/carts', cartRoute); 
+app.use('/api/v1/orders', orderRoute); 
+app.use('/api/v1/books/search',searchRoute); 
+
+app.get('/', (req, res) => {
+  res.send('<h1>Welcome to book store server</h1>');
 });
-const upload = multer({ storage });
 
-// Routes
-app.use('/api/auth', require('./routes/authRoutes')); // Authentication routes
-app.use('/api/books', require('./routes/bookRoutes')); // Book management routes
-app.use('/api/cart', require('./routes/cartRoutes')); // Cart management routes
-app.use('/api/orders', require('./routes/orderRoutes')); // Order management routes
-app.use('/api/books/search', require('./routes/searchRoutes')); // Search books route
-
-// File upload route (Cloudinary integration)
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+//File upload route (Cloudinary integration)
+app.post('/upload',upload.single('image'), async (req, res) => {
   try {
-    // Upload image to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'uploads',
-      use_filename: true,
-    });
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
 
-    res.status(200).json({
+    // // Upload image to Cloudinary in 'books' folder
+    // const result = await cloudinary.uploader.upload(req.file.path, {
+    //   folder: 'books',  // Set the folder to 'books'
+    //   use_filename: true,
+    // });
+
+ res.status(200).json({
       message: 'Image uploaded successfully',
-      url: result.secure_url,
+      url: req.file.path,  // Image URL from Cloudinary
     });
   } catch (error) {
     console.error(error);
@@ -59,12 +83,6 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-// Centralized error handling middleware for server errors
-app.use((err, req, res, next) => {
-  console.error(err.stack); // Log the error for debugging
-  res.status(500).json({ message: 'Internal server error' }); // Respond with a generic server error message
-});
+connectDB()
 
-// Start the server
-const PORT = process.env.PORT || 4500;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

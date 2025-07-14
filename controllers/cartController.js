@@ -1,28 +1,94 @@
-// Importing the Express library to create and manage routes.
-const express = require('express');
+const Cart = require('../models/CartItem');
+exports.getCart = async (req, res) => {
+    const { userId } = req.params;
 
-// Importing controller functions from the cartController file.
-// These functions handle the logic for adding items to the cart, removing items, and retrieving the cart.
-const { addToCart, removeFromCart, getCart } = require('../controllers/cartController');
+    try {
+        
+        const cartItems = await Cart.find({ user: userId }).populate('book');
 
-// Importing the authentication middleware to protect routes, ensuring only authorized users can access them.
-const authMiddleware = require('../middleware/authMiddleware');
+        res.status(200).json({'Cart-Items:':cartItems });
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving cart', error: error.message });
+    }
+};
 
-// Creating a new Express Router instance to define cart-related routes.
-const router = express.Router();
 
-// POST route to add an item to the cart.
-// This route is protected by `authMiddleware`, ensuring the user is authenticated.
-// Executes the `addToCart` controller function to handle the addition of a cart item.
-router.post('/add', authMiddleware, addToCart);
+exports.addToCart = async (req, res) => {
+    const { userId, bookId, quantity } = req.body;
 
-// DELETE route to remove an item from the cart by its ID.
-// Protected by `authMiddleware` and handled by the `removeFromCart` controller function.
-router.delete('/remove/:cartItemId', authMiddleware, removeFromCart);
+    try {
+        // Check if the item already exists in the cart
+        let cartItem = await Cart.findOne({ user: userId, book: bookId });
 
-// GET route to retrieve the current user's cart.
-// Protected by `authMiddleware` and handled by the `getCart` controller function.
-router.get('/', authMiddleware, getCart);
+        if (cartItem) {
+        
+            cartItem.quantity += quantity;
+        } else {
+       
+            cartItem = new Cart({
+                user: userId,
+                book: bookId,
+                quantity: quantity
+            });
+        }
 
-// Exporting the router to make these routes accessible in other parts of the application.
-module.exports = router;
+        await cartItem.save();
+
+        res.status(200).json({ message: 'Item added to cart successfully', cartItem });
+    } catch (error) {
+        res.status(500).json({ message: 'Error adding item to cart', error: error.message });
+    }
+};
+
+exports.updateCartItemQuantity = async (req, res) => {
+    const { userId, bookId } = req.params;
+    const { quantity } = req.body;
+
+    try {
+        // Find the cart item and update its quantity
+        const cartItem = await Cart.findOneAndUpdate(
+            { user: userId, book: bookId },
+            { quantity: quantity },
+            { new: true } // Return the updated document
+        );
+
+        if (!cartItem) {
+            return res.status(404).json({ message: 'Item not found in cart' });
+        }
+
+        res.status(200).json({ message: 'Cart item quantity updated successfully', cartItem });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating cart item quantity', error: error.message });
+    }
+};
+
+
+exports.removeFromCart = async (req, res) => {
+    const { userId, bookId } = req.params;
+
+    try {
+        // Find and delete the cart item
+        const cartItem = await Cart.findOneAndDelete({ user: userId, book: bookId });
+
+        if (!cartItem) {
+            return res.status(404).json({ message: 'Item not found in cart' });
+        }
+
+        res.status(200).json({ message: 'Item removed from cart successfully',cartItem });
+    } catch (error) {
+        res.status(500).json({ message: 'Error removing item from cart', error: error.message });
+    }
+};
+
+exports.clearCart = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        // Delete all cart items for the user
+        await Cart.deleteMany({ user: userId });
+
+        res.status(200).json({ message: 'Cart cleared successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error clearing cart', error: error.message });
+    }
+};
