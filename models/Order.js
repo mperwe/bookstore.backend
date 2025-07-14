@@ -18,7 +18,6 @@ const OrderSchema = new mongoose.Schema({
 { timestamps: true } // Adds createdAt and updatedAt fields
 );
 
-// Check if model already exists before creating it
 const Order = mongoose.models.Order || mongoose.model('Order', OrderSchema);
 
 module.exports = Order;
